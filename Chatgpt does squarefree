@@ -1,0 +1,62 @@
+Q := Rationals();
+P<x> := PolynomialRing(Q);
+f := x^3 - 60*x + 12;
+K<theta> := NumberField(f);
+OK := MaximalOrder(K);
+
+// element cleared of denom
+E := 511*theta^2 - 62291*theta + 12640;
+
+// basic diagnostics
+printf "Norm(E) = %o\n", Norm(E);
+printf "Norm(E) factorization: %o\n", Factorization(Integers()!Abs(Norm(E)));
+
+// ideal factorisation of (E)
+I := ideal<OK | E>;
+FacI := Factorization(I);
+printf "Ideal factorization of (E):\n";
+for pair in FacI do
+    P := pair[1]; e := pair[2];
+    printf "  %o ^ %o\n", P, e;
+end for;
+
+// assume OK, FacI, E are already defined as in your run
+
+// build the "square-ideal part" (you already printed it as sqpart)
+sqpart := ideal<OK|1>;
+for pair in FacI do
+    P := pair[1]; e := pair[2];
+    even := e - (e mod 2);
+    if even gt 0 then
+        sqpart *:= P^even;
+    end if;
+end for;
+
+// build the square-root ideal (product of primes to e/2)
+sqrtI := ideal<OK|1>;
+for pair in FacI do
+    P := pair[1]; e := pair[2];
+    if e ge 2 then
+        sqrtI *:= P^(e div 2);
+    end if;
+end for;
+
+printf "sqpart = %o\n", sqpart;
+printf "sqrtI = %o\n", sqrtI;
+
+// is sqrtI principal?
+isprin, gen := IsPrincipal(sqrtI);
+if isprin then
+    printf "sqrtI is principal. generator = %o\n", gen;
+    // gen may not be in OK exactly; force to OK if possible
+    delta := gen;
+    // form eta = E / delta^2 and coerce into OK
+    eta := E / delta^2;
+    eta_OK := OK!eta;    // may fail if eta not integral; if so clear denominators
+    printf "eta = %o\n", eta_OK;
+    printf "Norm(delta) = %o, Norm(eta) = %o\n", Norm(delta), Norm(eta_OK);
+    printf "Ideal factorisation of (eta): %o\n", Factorization(ideal<OK | eta_OK>);
+else
+    print "sqrtI is NOT principal. No global delta with (delta)^2 = sqpart.";
+    print "You can either work with the ideal-square, or try multiplying E by a unit or rational square to principalize.";
+end if;
