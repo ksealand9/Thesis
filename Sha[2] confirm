@@ -9,9 +9,6 @@ Q3 := -12*u0^2 + 204*u1^2 + 408*u2^2 + 25*u3^2 - 2*u4^2;
 
 X:=Scheme(ProjectiveSpace(U),[Q3,Q4]);
 //PointSearch(X,100);
-//for p in PrimesUpTo(100) do
-//    IsLocallySoluble(X,p);
-//end for;
 
 M3:=SymmetricMatrix(Q4);
 M4:=SymmetricMatrix(Q3);
@@ -72,7 +69,29 @@ TangentLine := Derivative[1][1]*(o0-P[1])+Derivative[2][1]*(o1-P[2])+Derivative[
 
 TangentLine;
 
+//========================
+//What are the irrelevant primes?
+//========================
 
+Sing := SingularSubscheme(X);
+primes := [];
+
+UZ<u0,u1,u2,u3,u4> := PolynomialRing(Integers(),5);
+XZ:=Scheme(ProjectiveSpace(UZ),[UZ!Q3,UZ!Q4]);
+
+for p in PrimesUpTo(100) do
+    Xp := BaseChange(XZ, GF(p));
+    Singp := SingularSubscheme(Xp);
+    if Dimension(Singp) ge 0 then
+        Append(~primes, p);
+    end if;
+end for;
+
+ELSprimes:=Set(primes cat [x[1]:x in Factorisation(D)]);
+ELSprimes;
+
+print "Primes of bad reduction:", primes;
+print "Is X ELS?", &and[IsLocallySoluble(X,p):p in primes];
 
 
 
