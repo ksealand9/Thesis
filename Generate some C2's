@@ -1,0 +1,93 @@
+//========================
+//Some preliminary objects
+//========================
+HH<t> := FieldOfFractions(PolynomialRing(RationalField()));
+P<x> := PolynomialRing(HH);
+P5<u0,u1,u2,u3,u4> := ProjectiveSpace(HH,4);
+U := CoordinateRing(P5);
+ 
+ 
+//=======================
+//Here is the input for f
+//=======================
+ 
+d:=-2; 
+f:=(x+1)*(x-1)*(x-5)*(x^2-d);
+//The f corresponding to the BSD example
+//f := x^5 + 5/2*x^4 + 17/8*x^3 + 11/16*x^2 + 1/16*x;
+
+
+rows:=[];
+for r in Roots(f) do
+    row:=[r[1]^i: i in [0..4]];
+    rows:=rows cat row;
+end for;
+row4:=[1,0,d,0,d^2];
+row5:=[0,1,0,d,0];
+M := Matrix(HH, 5, 5, rows cat row4 cat row5);
+ 
+//Defining L
+L<theta> := quo<P | f>;
+_<w0,w1,w2,w3,w4>:=PolynomialRing(L,5);
+ 
+//Recording the coefficients of f in k, and f'(theta)
+fcs := Coefficients(f);
+f0 := fcs[1]; f1 := fcs[2]; f2 := fcs[3]; f3 := fcs[4]; f4 := fcs[5]; f5 := fcs[6];
+//and those of f(x)/(x-theta) in L
+b4 := f5; b3 := theta*b4 + f4; b2 := theta*b3+f3; b1 := theta*b2+f2; b0 := theta*b1+f1;
+fprime := Evaluate(Derivative(f),theta);
+ 
+ 
+//===========================
+//Here is the input for delta
+//===========================
+
+
+delta:=Matrix(HH,5,1,[1,1,1,1,2]);
+delta:=M^(-1)*delta;
+delta:=&+[delta[i][1]*theta^(i-1):i in [1..5]];
+
+
+//delta := -1+(t^2/(t^2+1))*theta-(t^2/(t^2+1))*theta^2-(1/(t^2+1))*theta^3+(1/(t^2+1))*theta^4;
+ 
+//====================================================
+//Here we compute delta*u^2=Q0+theta*Q1+...+theta^4*Q4
+//====================================================
+ 
+//Here is the expression for delta*u^2
+deltau2:=delta*(w0+w1*theta+w2*theta^2+w3*theta^3+w4*theta^4)^2;
+ 
+//We compute the coefficient of delta*u^2 in the base 1,theta, ..., theta^4
+elem := deltau2*L!b0/fprime; mselem := Monomials(elem); cselem := Coefficients(elem);
+Q0 := &+[ Trace(cselem[i])*U!mselem[i]: i in [1..#cselem]];
+ 
+elem := deltau2*b1/fprime; mselem := Monomials(elem); cselem := Coefficients(elem);
+Q1 := &+[ Trace(cselem[i])*U!mselem[i]: i in [1..#cselem]];
+ 
+elem := deltau2*b2/fprime; mselem := Monomials(elem); cselem := Coefficients(elem);
+Q2 := &+[ Trace(cselem[i])*U!mselem[i]: i in [1..#cselem]];
+ 
+elem := deltau2*b3/fprime; mselem := Monomials(elem); cselem := Coefficients(elem);
+Q3 := &+[ Trace(cselem[i])*U!mselem[i]: i in [1..#cselem]];
+ 
+elem := deltau2*b4/fprime; mselem := Monomials(elem); cselem := Coefficients(elem);
+Q4 := &+[ Trace(cselem[i])*U!mselem[i]: i in [1..#cselem]];
+ 
+//============================
+//X is defined using Q3 and Q4
+//============================
+X := Scheme(P5,[Q3,Q4]);
+
+Q3t:=(t^2+1)*Q3;
+Q4t:=(t^2+1)*Q4;
+T:=2;
+Q30:=&+[Evaluate(Coefficients(Q3t)[i],T)*Monomials(Q3t)[i]: i in [1..#Monomials(Q3t)]];
+Q40:=&+[Evaluate(Coefficients(Q4t)[i],T)*Monomials(Q3t)[i]: i in [1..#Monomials(Q3t)]];
+P5<u0,u1,u2,u3,u4> := ProjectiveSpace(Rationals(),4);
+U := CoordinateRing(P5);
+print "Q3:=",Q30,";";
+print "Q4:=",Q40,";";
+//X20:=Scheme(P5,[U!Q30,U!Q40]);
+//X20;
+//QuadraticForm(Diagonalization(SymmetricMatrix(Q30)));
+//QuadraticForm(Diagonalization(SymmetricMatrix(Q40)));
