@@ -90,8 +90,14 @@ end for;
 ELSprimes:=Set(primes cat [x[1]:x in Factorisation(D)]);
 ELSprimes;
 
+
 print "Primes of bad reduction:", primes;
 print "Is X ELS?", &and[IsLocallySoluble(X,p):p in primes];
 
 
+for p in ELSprimes do
+    Xp := BaseChange(XZ, GF(p));
+    print "PRIME=",p,", POINTS=",Points(Xp);
+end for;
 
+ell:=((3*o0-5*o3)^2-2*o2^2)/o1^2;
