@@ -88,11 +88,9 @@ for p in PrimesUpTo(100) do
 end for;
 
 ELSprimes:=Set(primes cat [x[1]:x in Factorisation(D)]);
-ELSprimes;
 
-
-print "Primes of bad reduction:", primes;
-print "Is X ELS?", &and[IsLocallySoluble(X,p):p in primes];
+print "Primes of bad reduction:", ELSprimes;
+print "Is X ELS?", &and[IsLocallySoluble(X,p):p in ELSprimes];
 
 
 for p in ELSprimes do
