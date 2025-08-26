@@ -4,8 +4,8 @@
 R<T>:=PolynomialRing(Rationals());
 U<u0,u1,u2,u3,u4> := PolynomialRing(Rationals(),5);
 
-Q3 := u0*u1+u2*u3++3*u3*u4+u4^2;
-Q4 := u0^2-3*u1^2+3*u2^2+3*u3^2-u3*u4;
+Q3 := u0^2 + 3*u1^2 + 3*u2^2 - u3^2 + u4^2;
+Q4 := 2*u0^2 + 51*u1^2 + u2^2 - 35*u3^2 + u0*u4;
 
 //===============================================
 //Change Q3 and Q4 so that f is quintic and monic
