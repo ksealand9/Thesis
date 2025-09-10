@@ -1,0 +1,19 @@
+F<t> := FunctionField(Rationals());
+E := EllipticCurve([0, 2*t^2, 0, -1, 0]);  
+
+Delta := Discriminant(E);
+c4:=cInvariants(E)[1];
+c4-Delta;
+jInv  := jInvariant(E);
+
+Delta, jInv;   
+
+DeltaAt := function(t0)
+    phi := hom< F -> Rationals() | Rationals()!t0 >;
+    return phi(Delta);
+end function;
+
+DeltaAt(2);   
+
+Emin, phi := MinimalModel(E);
+Discriminant(Emin), IsIsomorphic(E, Emin);   
