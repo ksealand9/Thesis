@@ -311,7 +311,8 @@ end function;
 p0:=findp(a,m0,#GG);
 
 _,x:=IsPrincipal(p0*a^(-1));
-
+//Does this fix the random false false problem?
+if Evaluate(x, inft[1]) lt 0 then x *:= -1; end if; 
 
 
 
@@ -319,6 +320,8 @@ _,x:=IsPrincipal(p0*a^(-1));
 t:=S*beta*x;
 t:=OK!t;
 Factorisation(t*OK div p0);
+
+t;
 
 
 TEST:=[];
