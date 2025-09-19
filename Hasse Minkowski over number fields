@@ -2,6 +2,7 @@ R<x>:=PolynomialRing(Rationals());
 field:=NumberField(x^2-3);
 OK:=RingOfIntegers(field);
 P3<y4,y5,y6,y7> := ProjectiveSpace(field,3);
+//Q:=2*y4^2+3*17*y5^2+5*y6^2-20*7*y7^2;
 Q:=1*y4^2+17*y5^2+5*y6^2-5*7*y7^2;
 
 solveineq:=function(a,b,c,d,bool1,bool2,r)
@@ -60,12 +61,12 @@ Qnew,S:=reducequartic(Q);
 
 
 //Q:=QuadraticForm(Q);
-Q:=ClearDenominators(Q);
+Q:=ClearDenominators(Qnew);
 
-a1:=field!Coefficient(Qnew,1,2);
-a2:=field!Coefficient(Qnew,2,2);
-a3:=field!Coefficient(Qnew,3,2);
-a4:=field!Coefficient(Qnew,4,2);
+a1:=field!Coefficient(Q,1,2);
+a2:=field!Coefficient(Q,2,2);
+a3:=field!Coefficient(Q,3,2);
+a4:=field!Coefficient(Q,4,2);
 
 
 
@@ -169,16 +170,20 @@ tp:=function(p)
     pam3:=Inverse(map3);
     for n in [1..4] do
         if map2(coeffs[n]) ne 0 then
+            primebelow(p);
             if primebelow(p) eq 2 then
                 pt:=FindPoinTT(Q,p);
             else
                 pt:=FindPoint(Q,p,n);
             end if;
+            pt;
             S<t>:=PolynomialRing(Comp);
             N:=OK!Evaluate(Q,pt);
             M:=-map1(N)+map1(coeffs[n])*map1(OK!pt[n])^2;
             f:=map1(coeffs[n])*t^2-M;
+            f;
             root_list := Roots(f, Comp);
+            root_list;
             Sort(~root_list); // Ensure sorted roots
             lift := root_list[1][1];
             point:=<map1(pt[i]): i in [1..4]>;
@@ -356,6 +361,5 @@ end if;
 end function;
 
 HasseMinkowski(Q,field);
-
 
 
