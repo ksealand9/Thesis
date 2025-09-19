@@ -55,11 +55,10 @@ reducequartic:=function(quartic)
     return newquartic,list;
 end function;
 
-
 HasseMinkowski:=function(Q,field);
 Qnew,S:=reducequartic(Q);
 
-
+Qnew;
 
 //Q:=QuadraticForm(Q);
 Q:=ClearDenominators(Qnew);
@@ -128,7 +127,8 @@ FindPoint := function(Q,p,n)
 end function;
 
 FindPoinTT := function(Q1, p)
-    r,map:=quo<OK|p^3>;
+    //Need to check p^5 because v_p(2)=2 in our example..., so >5!
+    r,map:=quo<OK|p^5>;
     pam:=Inverse(map);
     for n1 in r do
         for n2 in r do
@@ -171,20 +171,16 @@ tp:=function(p)
     pam3:=Inverse(map3);
     for n in [1..4] do
         if map2(coeffs[n]) ne 0 then
-            primebelow(p);
             if primebelow(p) eq 2 then
                 pt:=FindPoinTT(Q,p);
             else
                 pt:=FindPoint(Q,p,n);
             end if;
-            pt;
             S<t>:=PolynomialRing(Comp);
             N:=OK!Evaluate(Q,pt);
             M:=-map1(N)+map1(coeffs[n])*map1(OK!pt[n])^2;
             f:=map1(coeffs[n])*t^2-M;
-            f;
             root_list := Roots(f, Comp);
-            root_list;
             Sort(~root_list); // Ensure sorted roots
             lift := root_list[1][1];
             point:=<map1(pt[i]): i in [1..4]>;
@@ -351,8 +347,11 @@ C2:= Conic(P2, a3*X^2 + a4*y^2 + t*z^2);
 true1,pt1:=HasRationalPoint(C1);
 true2,pt2:=HasRationalPoint(C2);
 
+pt1;
+pt2;
 
 POINT:=<field!pt1[1],field!pt1[2],field!pt2[1],field!pt2[2]>;
+
 if Evaluate(Qnew,POINT) eq 0 then
     return POINT;
 else
