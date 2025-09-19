@@ -1,0 +1,361 @@
+R<x>:=PolynomialRing(Rationals());
+field:=NumberField(x^2-3);
+OK:=RingOfIntegers(field);
+P3<y4,y5,y6,y7> := ProjectiveSpace(field,3);
+Q:=2*y4^2+3*17*y5^2+5*y6^2-20*7*y7^2;
+
+solveineq:=function(a,b,c,d,bool1,bool2,r)
+    alpha1:=Round((b-d)/(a*d-b*c));
+    alpha2:=Round((a-c)/(a*d-b*c));
+    n:=5;
+    for x in [alpha1-n..alpha1+n] do
+        for y in [alpha2-n..alpha2+n] do
+            if bool1 eq 1 and bool2 eq 1 then
+                if a*x+b*y ge r and c*x+d*y ge r then
+                    return [x,y];
+                end if;
+            end if;
+            if bool1 eq 1 and bool2 eq -1 then
+                if a*x+b*y ge r and c*x+d*y le r then
+                    return [x,y];
+                end if;
+            end if;
+            if bool1 eq -1 and bool2 eq 1 then
+                if a*x+b*y le r and c*x+d*y ge r then
+                    return [x,y];
+                end if;
+            end if;
+            if bool1 eq -1 and bool2 eq -1 then
+                if a*x+b*y le r and c*x+d*y le r then
+                    return [x,y];
+                end if;
+            end if;
+    end for;
+end for;
+end function;
+
+reducequartic:=function(quartic)
+    list:=[];
+    quartic:=ClearDenominators(quartic);
+    coeffs:=Coefficients(quartic);
+    newcoeffs:=[1,1,1,1];
+    for i in [1..4] do
+        I:=ideal<OK|OK!coeffs[i]>;
+        for t in Factorisation(I) do
+            if t[2] ge 2 then
+                Append(~list,<t[1],t[2]>);
+            elif t[2] mod 2 eq 1 then
+                newcoeffs[i]:=newcoeffs[i]*Generators(t[1])[1];
+            end if;
+        newcoeffs[i]:=newcoeffs[i]*Sign(Integers()!coeffs[i]);
+        end for;
+    end for;
+    newquartic:=&+[newcoeffs[i]*Monomials(quartic)[i]: i in [1..4]];
+    return newquartic,list;
+end function;
+
+HasseMinkowski:=function(Q,field);
+Qnew,S:=reducequartic(Q);
+
+
+
+//Q:=QuadraticForm(Q);
+Q:=ClearDenominators(Q);
+
+a1:=field!Coefficient(Qnew,1,2);
+a2:=field!Coefficient(Qnew,2,2);
+a3:=field!Coefficient(Qnew,3,2);
+a4:=field!Coefficient(Qnew,4,2);
+
+
+
+X2:=Scheme(P3,Q);
+OK:=RingOfIntegers(field);
+
+
+I := ideal<OK | RingOfIntegers(field)!(2*a1*a2*a3*a4)>;
+P:=Factorization(I);
+P:=[factor[1] : factor in P];
+
+
+
+
+primebelow:=function(p)
+    return Factorization(Norm(p))[1][1];
+end function;
+
+
+
+
+
+//1: factor in the k position correctly
+//2: -a1/a2 sqrt mod p, just write down the explicit point
+//3: what's going on mod p? one of them will have to lift. so maybe it's better to 
+// loop through the points mod p instead of lifting first. 
+FindPoint := function(Q,p,n)
+    FF,map:=ResidueClassField(p);
+    pam:=Inverse(map);
+    coeffs:=[map(Coefficients(Q)[i]): i in [1..4]];
+    SS:=[];
+    T:=[];
+    for i in [1..4] do
+        if coeffs[i] eq 0 then
+            Append(~SS,i);
+        else
+            Append(~T,i);
+        end if;
+    end for;
+    if #SS le 1 then
+        P3<[y]>:=PolynomialRing(FF,3);
+        List:=[coeffs[j]: j in T|j ne n];
+        Qnew:=List[1]*y[1]^2+List[2]*y[2]^2;
+        Qnew:=Qnew+coeffs[n]*y[3]^2;
+        S:=Scheme(ProjectiveSpace(P3),Qnew);
+        _,curve:=IsConic(S);
+        _,pt:=HasRationalPoint(curve);
+        pt:=[pam(pt[i]): i in [1..2]];
+        Insert(~pt,n,1);
+        Insert(~pt,SS[1],1);
+    else
+        pt:=[pam(Sqrt(FF!(-coeffs[T[1]]/coeffs[T[2]]))),1];
+        for x in SS do
+            Insert(~pt,x,1);
+        end for;
+    end if;
+    return pt;
+end function;
+
+FindPoinTT := function(Q1, p)
+    r,map:=quo<OK|p^3>;
+    pam:=Inverse(map);
+    for n1 in r do
+        for n2 in r do
+            for n3 in r do
+                for n4 in r do
+                    // Check if all coordinates are non-zero
+                    if n1 in r and n1 ne 0 and
+                       n2 in r and n2 ne 0 and
+                       n3 in r and n3 ne 0 and
+                       n4 in r and n4 ne 0 then
+                        // Check if the point satisfies the equation Q1
+                        if Evaluate(Q1, [n1, n2, n3, n4]) eq 0 then
+                            // Return the point once found
+                            return [pam(n1), pam(n2), pam(n3), pam(n4)];
+                        end if;
+                    end if;
+                end for;
+            end for;
+        end for;
+    end for;
+    
+    // Return an empty list if no point is found
+    return [];
+end function;
+
+
+
+
+
+tp:=function(p)
+    Comp,map1:=Completion(OK,p);
+    pam1:=Inverse(map1);
+    RR,map2:=ResidueClassField(p);
+    pam2:=Inverse(map2);
+    coeffs:=[a1,a2,a3,a4];
+    //fix this or justify it
+    //exp:=Valuation(map1(a3+a4))+1+2*Valuation(map1(2));
+    exp:=2+2*Valuation(map1(2));
+    r,map3:=quo<OK|p^(exp)>;
+    pam3:=Inverse(map3);
+    for n in [1..4] do
+        if map2(coeffs[n]) ne 0 then
+            if primebelow(p) eq 2 then
+                pt:=FindPoinTT(Q,p);
+            else
+                pt:=FindPoint(Q,p,n);
+            end if;
+            S<t>:=PolynomialRing(Comp);
+            N:=OK!Evaluate(Q,pt);
+            M:=-map1(N)+map1(coeffs[n])*map1(OK!pt[n])^2;
+            f:=map1(coeffs[n])*t^2-M;
+            root_list := Roots(f, Comp);
+            Sort(~root_list); // Ensure sorted roots
+            lift := root_list[1][1];
+            point:=<map1(pt[i]): i in [1..4]>;
+            point[n]:=lift;
+            firsthalf:=map1(a1)*(point[1])^2+map1(a2)*(point[2])^2;
+            secondhalf:=a3+a4;
+            if IsZero(firsthalf) eq true then
+                return <pam3(map3(secondhalf)),Valuation(map1(secondhalf))>;
+            else
+                return <pam3(map3(pam1(firsthalf))),Valuation(firsthalf)>;
+            end if;
+        end if;
+    end for;
+return 0;
+end function;
+
+TP:=[tp(p): p in P];
+A:=AssociativeArray();
+for i in [1..#P] do
+    A[P[i]]:=TP[i];
+end for;
+
+
+mp:= [p^(A[p][2]+1+2*Valuation(map1(2))) where Comp,map1:=Completion(field,p) : p in P];
+m0:= &*mp;
+//_,gen:=IsPrincipal(m0);
+mp1:= &*[p^(A[p][2]) where Comp,map1:=Completion(field,p) : p in P];
+//Dealing with infinite places
+inft:=InfinitePlaces(field);
+
+
+
+
+fhcs:=[a1,a2];
+shcs:=[a3,a4];
+
+
+
+
+//Applying CRT
+X:=[A[p][1]: p in P];
+
+
+
+S:=ChineseRemainderTheorem(X,mp);
+
+
+tinf:=function(i)
+if [Sign(Evaluate(x,inft[i])): x in fhcs] eq [-1,-1] then
+    return -1;
+elif [Sign(Evaluate(x,inft[i])): x in fhcs] eq [1,1] then
+    return 1;
+else
+    if [Sign(Evaluate(x,inft[i])): x in shcs] eq [-1,-1] then
+        return 1;
+    else
+        return -1;
+    end if;
+end if;
+end function;
+
+
+fhcs:=[a1,a2];
+shcs:=[a3,a4];
+
+
+//Using integer programming to adjust for places at infinity
+beta:=function(field);
+inft:=InfinitePlaces(field);
+theta1:=Generators(m0)[1];
+//FIX: to adjust for when m0 isn't principal
+theta2:=Generators(m0)[2];
+R:=RealField();
+a:=Evaluate(theta1,inft[1]);
+b:=Evaluate(theta2,inft[1]);
+c:=Evaluate(theta1,inft[2]);
+d:=Evaluate(theta2,inft[2]);
+e:=Sign(Evaluate(S,inft[1]));
+f:=Sign(Evaluate(S,inft[2]));
+intprog:=solveineq(a,b,c,d,e*tinf(1),f*tinf(2),-1);
+return 1+intprog[1]*theta1+intprog[2]*theta2;
+end function;
+
+beta:=beta(field);
+
+
+SO:=ideal<OK|S>;
+betaO:=ideal<OK|beta>;
+a:=SO*betaO*mp1^(-1);
+
+
+GG,map:=RayClassGroup(m0,[1,2]);
+//#GG;
+pam:=Inverse(map);
+
+isprimeor:=function(n)
+t:=Factorisation(n);
+if #t eq 1 and t[1][2] eq 1 then
+    return true;
+else
+    return false;
+end if;
+end function;
+
+
+findp:=function(a,b,c)
+for n in [0..c] do
+    y:=Integers()!Norm(m0);
+    x:=Integers()!Norm(a);
+    t:=x+n*y;
+    if isprimeor(t) eq true then
+        prime_ideal_factorization := Factorization(ideal<OK|t>);
+        for prime_ideal in prime_ideal_factorization do
+            if pam(prime_ideal[1]) eq pam(a) then
+                return prime_ideal[1];
+            end if;
+        end for;
+    end if;
+end for;
+end function;
+
+
+
+
+
+
+
+p0:=findp(a,m0,#GG);
+
+_,x:=IsPrincipal(p0*a^(-1));
+
+
+
+
+
+t:=S*beta*x;
+t:=OK!t;
+Factorisation(t*OK div p0);
+
+
+TEST:=[];
+Append(~TEST,pam(a) eq pam(p0));
+//Factorisation(Norm(t));
+//Factorisation(Norm(p0));
+for p in P do
+    FF:=GF(primebelow(p));
+    Comp,map1:=Completion(field,p);
+    RR,plam:=ResidueClassField(p);
+    sp1:=plam(t^(-1)*A[p][1]);
+    Append(~TEST,IsSquare(sp1));
+end for;
+
+for e in [1..2] do
+    Append(~TEST,Sign(Evaluate(t,inft[e])) eq tinf(e));
+end for;
+
+TEST;
+
+
+P2<X,y,z> := ProjectiveSpace(field, 2);
+C1 := Conic(P2, a1*X^2 + a2*y^2 - t*z^2);
+C2:= Conic(P2, a3*X^2 + a4*y^2 + t*z^2);
+
+true1,pt1:=HasRationalPoint(C1);
+true2,pt2:=HasRationalPoint(C2);
+
+
+POINT:=<field!pt1[1],field!pt1[2],field!pt2[1],field!pt2[2]>;
+if Evaluate(Qnew,POINT) eq 0 then
+    return POINT;
+else
+    print "error";
+end if;
+//Fix so it returns a smooth point or an error message! 
+end function;
+
+HasseMinkowski(Q,field);
+
+
+
