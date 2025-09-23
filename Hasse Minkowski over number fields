@@ -130,9 +130,9 @@ FindPoint := function(Q,p,n)
     return pt;
 end function;
 
-FindPoinTT := function(Q1, p)
-    //Need to check p^5 because v_p(2)=2 in our example..., so >5!
-    r,map:=quo<OK|p^5>;
+FindPoinTT := function(Q1, p, val)
+    //Adjust precision?
+    r,map:=quo<OK|p^val>;
     pam:=Inverse(map);
     for n1 in r do
         for n2 in r do
@@ -176,7 +176,7 @@ tp:=function(p)
     for n in [1..4] do
         if map2(coeffs[n]) ne 0 then
             if primebelow(p) eq 2 then
-                pt:=FindPoinTT(Q,p);
+                pt:=FindPoinTT(Q,p,exp);
             else
                 pt:=FindPoint(Q,p,n);
             end if;
@@ -277,7 +277,6 @@ a:=SO*betaO*mp1^(-1);
 
 
 GG,map:=RayClassGroup(m0,[1,2]);
-//#GG;
 pam:=Inverse(map);
 
 isprimeor:=function(n)
@@ -307,11 +306,6 @@ end for;
 end function;
 
 
-
-
-
-
-
 p0:=findp(a,m0,#GG);
 
 _,x:=IsPrincipal(p0*a^(-1));
@@ -319,33 +313,9 @@ _,x:=IsPrincipal(p0*a^(-1));
 if Evaluate(x, inft[1]) lt 0 then x *:= -1; end if; 
 
 
-
-
 t:=S*beta*x;
 t:=OK!t;
 Factorisation(t*OK div p0);
-
-t;
-
-
-TEST:=[];
-Append(~TEST,pam(a) eq pam(p0));
-//Factorisation(Norm(t));
-//Factorisation(Norm(p0));
-for p in P do
-    FF:=GF(primebelow(p));
-    Comp,map1:=Completion(field,p);
-    RR,plam:=ResidueClassField(p);
-    sp1:=plam(t^(-1)*A[p][1]);
-    Append(~TEST,IsSquare(sp1));
-end for;
-
-for e in [1..2] do
-    Append(~TEST,Sign(Evaluate(t,inft[e])) eq tinf(e));
-end for;
-
-TEST;
-
 
 P2<X,y,z> := ProjectiveSpace(field, 2);
 C1 := Conic(P2, a1*X^2 + a2*y^2 - t*z^2);
@@ -354,9 +324,6 @@ C2:= Conic(P2, a3*X^2 + a4*y^2 + t*z^2);
 true1,pt1:=HasRationalPoint(C1);
 true2,pt2:=HasRationalPoint(C2);
 
-pt1;
-pt2;
-
 POINT:=<field!pt1[1],field!pt1[2],field!pt2[1],field!pt2[2]>;
 
 if Evaluate(Qnew,POINT) eq 0 then
@@ -364,7 +331,6 @@ if Evaluate(Qnew,POINT) eq 0 then
 else
     print "error";
 end if;
-//Fix so it returns a smooth point or an error message! 
 end function;
 
 HasseMinkowski(Q,field);
