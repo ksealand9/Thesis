@@ -1,0 +1,105 @@
+//========================
+//Some preliminary objects
+//========================
+p:=3;
+F:=FiniteField(p);
+
+
+//S<d,t,B> := FunctionField(F,3);
+S<t>:=FunctionField(F);
+d:=1;
+OS:=RingOfIntegers(S);
+R<x>:=PolynomialRing(S);
+U<u0,u1,u2,u3,u4> := PolynomialRing(S,5);
+
+a2:=t+t^2;
+a3:=2*t;
+a4:=t;
+b1:=2;
+b2:=t;
+b3:=1;
+b4:=1;
+
+Q3:=d*(u0^2-t*u1^2)+a2*u2^2+2*a3*u2*u3+2*a4*u3*u4;
+Q4:=-2*d*u0*u1+b1*u2^2+b2*u3^2+2*b3*u2*u4+b4*u4^2;
+
+M3:=SymmetricMatrix(Q3);
+M4:=SymmetricMatrix(Q4);
+
+f := Determinant(ChangeRing(M3,R)+x*ChangeRing(M4,R));
+
+print "f: ", Factorisation(f);
+print "LC(f): ", LeadingCoefficient(f);
+
+D:=Numerator(Discriminant(f));
+print "Delta:", Factorisation(D);
+print "LC(Delta):",LeadingCoefficient(D);
+
+f2:=Factorisation(f)[1][1];
+f3:=Factorisation(f)[2][1];
+
+print "Deltaf3:", Factorisation(Numerator(Discriminant(f3))*Denominator(Discriminant(f3)));
+
+L2<sqy> := quo<R | f2>;
+L3<the> := quo<R | f3>;
+
+M:=ChangeRing(M3,L2)+sqy*ChangeRing(M4,L2);
+vs := Matrix(Basis(Image(M)));
+epsilon2:=Determinant(vs*M*Transpose(vs));
+print "epsilon2: ", epsilon2;
+//print "Norm(epsilon2):", Norm(epsilon2);
+//print "Is Norm(epsilon2) square?", IsSquare(Norm(epsilon2));
+print "Is epsilon2 square?", IsSquare(epsilon2);
+
+M:=ChangeRing(M3,L3)+the*ChangeRing(M4,L3);
+M:=Submatrix(M,[1,2,4,5],[1,2,4,5]);
+epsilon3:=Determinant(M);
+print "epsilon3:",epsilon3;
+//print "Norm(epsilon3):", Factorisation(Numerator(Norm(epsilon3))*Denominator(Norm(epsilon3)));
+"Is Norm(epsilon3) a square?", IsSquare(Norm(epsilon3));
+print "Is epsilon3 square?", IsSquare(epsilon3);
+
+//Now, defining L and L_v
+
+L<theta> := ext<S| f3>;
+v := Factorisation(D)[4][1];
+P := ideal<OS | v>;
+Kv<u>, pi := Completion(S, P);
+Kappa<a> := CoefficientRing(Kv);
+T:=pi(t);
+
+Coefficients(f3);
+Pv<x> := PolynomialRing(Kv);
+//f3_Kv := ChangeRing(f3,Kv);
+f3_Kv := x^3 + (T^2 + T)*x^2 + T*x + 2*T^3 + 2*T^2;
+
+Factorisation(f3_Kv);
+
+//STILL NOT INTEGRATED: EPSILON3!
+//For now I just copy pasted it but I need to integrate this so you can do it for any prime
+
+fw1 := Factorization(f3_Kv)[1][1];
+Lw1<theta_w1> := quo<Pv | fw1>;
+epsilon3_1 := (2*T^5 + T^4 + 2*T^3 + T^2)*theta_w1^2 +
+              (T^4 + T^3)*theta_w1 +
+              T^6 + 2*T^5 + T^4 + T^3;
+//print "First factor:", fw1;
+print "eps3:", epsilon3_1;
+print "IsSquare(Kv!epsilon3):", IsSquare(Kv!epsilon3_1);
+
+fw2 := Factorization(f3_Kv)[2][1];
+fw2:=Evaluate(fw2,x-Coefficients(fw2)[2]/2);
+IsEisenstein(fw2);
+[Valuation(c):c in Coefficients(fw2)];
+IsIrreducible(fw2);
+Lw2<theta_w2> := quo<Pv|fw2>;
+epsilon3_2 := (2*T^5 + T^4 + 2*T^3 + T^2)*theta_w2^2 +
+              (T^4 + T^3)*theta_w2 +
+              T^6 + 2*T^5 + T^4 + T^3;
+//print "Second factor:", fw2;
+print "eps3:", epsilon3_2;
+//print "Norm(eps3):", Norm(epsilon3_2);
+//print "IsSquare(Norm(eps3)):", IsSquare(Norm(epsilon3_2));
+
+//IsSquare(a^3+2*a^2+2*a+2);
+//IsSquare(a^6);
