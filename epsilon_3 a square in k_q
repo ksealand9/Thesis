@@ -62,7 +62,8 @@ print "Is epsilon3 square?", IsSquare(epsilon3);
 //Now, defining L and L_v
 
 L<theta> := ext<S| f3>;
-v := Factorisation(D)[4][1];
+//v := Factorisation(D)[4][1];
+v:=t*(t+1)^2+1;
 P := ideal<OS | v>;
 Kv<u>, pi := Completion(S, P);
 Kappa<a> := CoefficientRing(Kv);
