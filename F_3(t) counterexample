@@ -1,0 +1,42 @@
+//========================
+//Some preliminary objects
+//========================
+p:=3;
+F:=FiniteField(p);
+S<t>:=FunctionField(F);
+OS:=RingOfIntegers(S);
+R<x>:=PolynomialRing(S);
+U<u0,u1,u2,u3,u4> := PolynomialRing(S,5);
+
+d:=t*(t*(t+1)^2+1);
+a2:=t+t^2;
+a3:=2*t;
+a4:=t;
+b1:=2;
+b2:=t;
+b3:=1;
+b4:=1;
+
+Q3:=d*(u0^2-t*u1^2)+a2*u2^2+2*a3*u2*u3+2*a4*u3*u4;
+Q4:=-2*d*u0*u1+b1*u2^2+b2*u3^2+2*b3*u2*u4+b4*u4^2;
+
+M3:=SymmetricMatrix(Q3);
+M4:=SymmetricMatrix(Q4);
+
+f := Determinant(ChangeRing(M3,R)+x*ChangeRing(M4,R));
+
+print "f: ", Factorisation(f);
+print "LC(f): ", LeadingCoefficient(f);
+
+D:=Numerator(Discriminant(f));
+print "Delta:", Factorisation(D);
+print "LC(Delta):",LeadingCoefficient(D);
+
+f2:=Factorisation(f)[1][1];
+f3:=Factorisation(f)[2][1];
+
+print "Deltaf3:", Factorisation(Numerator(Discriminant(f3))*Denominator(Discriminant(f3)));
+
+L2<sqy> := quo<R | f2>;
+L3<the> := quo<R | f3>;
+
